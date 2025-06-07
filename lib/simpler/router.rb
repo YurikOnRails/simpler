@@ -2,6 +2,7 @@ require_relative 'router/route'
 
 module Simpler
   class Router
+    class RouteNotFoundError < StandardError; end
 
     def initialize
       @routes = []
@@ -19,7 +20,10 @@ module Simpler
       method = env['REQUEST_METHOD'].downcase.to_sym
       path = env['PATH_INFO']
 
-      @routes.find { |route| route.match?(method, path) }
+      route = @routes.find { |route| route.match?(method, path) }
+      raise RouteNotFoundError, "No route matches [#{method.upcase}] #{path}" unless route
+
+      route
     end
 
     private
@@ -36,6 +40,5 @@ module Simpler
     def controller_from_string(controller_name)
       Object.const_get("#{controller_name.capitalize}Controller")
     end
-
   end
 end
